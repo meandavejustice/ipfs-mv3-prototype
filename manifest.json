@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "ipfs-mv3-prototype",
+  "version": "0.1",
+  "description": "ipfs manifest v3 prototype",
+  "declarative_net_request" : {
+    "rule_resources" : [{
+      "id": "ruleset_1",
+      "enabled": true,
+      "path": "rules.json"
+    }]
+  },
+  "permissions": [
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback"
+  ],
+  "host_permissions": ["*://*.ipfs.io/*"],
+  "author": "Dave Justice",
+  "homepage_url": "https://github.com/meandavejustice/",
+  "short_name": "IPFS mv3"
+}
