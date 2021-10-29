@@ -10,7 +10,7 @@
     "scripting",
     "tabs"
   ],
-  "host_permissions": ["*://*.ipfs.io/*"],
+  "host_permissions": ["*://*.ipfs.io/*", "*://*.dweb.link/*"],
   "author": "Dave Justice",
   "homepage_url": "https://github.com/meandavejustice/",
   "short_name": "IPFS mv3"

@@ -1,23 +1,12 @@
-# React Chrome Extension (Manifest v3) Boilerplate
+# IPFS MV3 Prototype
 
-Starting point for creating a Chrome Browser Extension popup and service-worker based background script. Contains a custom Makefile to prepare your build for an unpacked local upload to chrome://extensions and prepares a zip file for direct upload to the Chrome Web Store.
+Experimental extension with the goal of testing how much of the feature set from [ipfs-companion](https://github.com/ipfs/ipfs-companion) will fit into the new [manifest v3](https://developer.chrome.com/docs/extensions/mv3/intro/) spec.
 
-Traditionally browser extensions are built using vanilla JS. While this is certainly feasible, it is often cumbersome and inefficient when developing more complex extensions with a rich UI.
+## service_worker_alpha
 
-## Available Scripts
+This branch (`service_worker_alpha`) parses the url the tab update event, tests that it `is-ipfs`, formats the url, and updates the tab with the local IPFS node url.
 
-In the root project directory, you can run:
+Currently this only supports:
+* redirects from https://ipfs.io/ => local ipfs nodes(localhost:8080)
+* redirects from https://dweb.link/ => local ipfs nodes(localhost:8080)
 
-### `make build`
-
-Prepares the app build for upload to chrome://extensions/ and the Google Chrome Webstore \
-It correctly bundles your project and optimizes the build for use as a Chrome Extension. \
-
-This command creates two things:
-
-1.  A `./dist` directory that contains the files for `chrome://extensions/` -- use this folder to load the unpacked extension
-2.  A file called latestBuild.zip, this .zip can be uploaded to the Developer Console when submitting your extension to the Chrome Web Store
-
-#### Known Limitations
-
-- Does not currently handle [Options](https://developer.chrome.com/docs/extensions/mv3/options/) or [Content Scripts](https://developer.chrome.com/docs/extensions/mv3/content_scripts/). For most use cases the options.html page from Chrome is unecessary as you can build an options menu into your popup directly. In order to enable content scripts and the options page, I recommend using `react-app-rewired` to replace the standard single entry point with three entry points for the popup, options, and content scripts.

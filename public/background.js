@@ -3,7 +3,6 @@
 
 const url = require('url');
 const isIPFS = require('is-ipfs');
-const { ifError } = require('assert');
 
 let lifeline;
 
@@ -50,20 +49,26 @@ async function retryOnTabUpdate(tabId, info, tab) {
     keepAlive();
   }
 
-  console.log('LOGGING INFO: ', info, info.url);
-  console.log('is this an IPFS URL? ', isIPFS.url(info.url));
-
   if (info.url) {
     var parsedUrl = url.parse(info.url);
-    if (parsedUrl.host.indexOf(settings.host) === -1) {
+    console.log('isIPFS: ', isIPFS.url(info.url));
+    
+    if (isIPFS.url(info.url) && parsedUrl.host.indexOf(settings.host) === -1) {
+      const hostArray = parsedUrl.host.split('.');
       const node = `${settings.host}:${settings.port}`
-
-      parsedUrl.protocol = 'http:'
-      parsedUrl.host = node
-      parsedUrl.hostname = node
-      const localUrl = url.format(parsedUrl)
+      parsedUrl.protocol = 'http:';
+      hostArray.splice(-2);
+      hostArray.push(node);
+      const newHost = hostArray.join('.');
+      parsedUrl.host = newHost;
+      parsedUrl.hostname = newHost;
+      const localUrl = url.format(parsedUrl);
+      
       console.log('redirected', info.url, 'to', node, localUrl);
-      // return { redirectUrl: localUrl }
+      
+      chrome.tabs.update({
+        url: localUrl
+      });
     }
   }
 }
