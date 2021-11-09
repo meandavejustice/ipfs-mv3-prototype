@@ -12,8 +12,7 @@
   },
   "scripts": {
     "prebuild": "rimraf build",
-    "build": "webpack --mode development --devtool cheap-module-source-map ./public/background.js --output-path ./build",
-    "postbuild": "cp -r public/*.json build/"
+    "build": "webpack --mode development --devtool cheap-module-source-map ./addon/background.js --output-path ./build"
   },
   "eslintConfig": {
     "extends": [
@@ -38,7 +37,6 @@
     ]
   },
   "devDependencies": {
-    "esbuild": "^0.13.12",
     "webpack-cli": "^4.9.1"
   }
 }

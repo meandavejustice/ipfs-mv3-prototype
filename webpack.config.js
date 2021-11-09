@@ -12,7 +12,7 @@ module.exports = {
         new NodePolyfillPlugin(),
         new CopyPlugin({
             patterns: [
-              { from: "public", to: "." },
+              { from: "addon", to: "." },
             ],
           }),
     ]
