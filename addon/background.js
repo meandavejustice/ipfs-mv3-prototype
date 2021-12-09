@@ -1,19 +1,12 @@
-// const ipfsHTTPClient = require('ipfs-http-client');
-// const { create } = ipfsHTTPClient;
-
-const url = require('url');
-const isIPFS = require('is-ipfs');
+const browser = require('webextension-polyfill');
+const { create } = require('ipfs-http-client');
+const IsIpfs = require('is-ipfs');
+const check = String.fromCodePoint(0x2714);
 
 let lifeline;
+const client = create('http://localhost:5001/api/v0');
 
-keepAlive();
-
-const settings = {
-  host: 'localhost',
-  port: '8080'
-};
-
-chrome.runtime.onConnect.addListener(port => {
+browser.runtime.onConnect.addListener(port => {
   if (port.name === 'keepAlive') {
     lifeline = port;
     setTimeout(keepAliveForced, 295e3); // 5 minutes minus 5 seconds
@@ -29,46 +22,60 @@ function keepAliveForced() {
 
 async function keepAlive() {
   if (lifeline) return;
-  for (const tab of await chrome.tabs.query({ url: '*://*/*' })) {
+  for (const tab of await browser.tabs.query({ url: '*://*/*' })) {
     try {
-      await chrome.scripting.executeScript({
+      await browser.scripting.executeScript({
         target: { tabId: tab.id },
-        function: () => chrome.runtime.connect({ name: 'keepAlive' }),
-        // `function` will become `func` in Chrome 93+
+        func: () => browser.runtime.connect({ name: 'keepAlive' }),
       });
-      chrome.tabs.onUpdated.removeListener(retryOnTabUpdate);
+      browser.tabs.onUpdated.removeListener(retryOnTabUpdate);
       return;
     } catch (e) {}
   }
-  chrome.tabs.onUpdated.addListener(retryOnTabUpdate);
+  browser.tabs.onUpdated.addListener(retryOnTabUpdate);
+}
+
+function isNewTabURL(url) {
+  if (!url) return true;
+  return url.includes('chrome://');
+}
+
+async function resolveDNSAndAddRule(domain) {
+  const cid = await client.dns(domain);
+  if (!cid) return;
+
+  const id = Math.floor(Math.random() * 29999);
+  browser.declarativeNetRequest.updateDynamicRules(
+    {
+      addRules: [
+        {
+          "id": id,
+          "priority": 1,
+          "action": { "type": "redirect", "redirect": { "url": `https://ipfs.io/${cid}` } },
+          "condition": { "urlFilter": domain, "resourceTypes": ["main_frame"] }
+        }
+      ]
+    },
+    (result) => {console.log(`Added rule ${id}, cid: ${id}, domain: ${domain}. Will redirect to ipfs gateway on next page load ${check}`)}
+  );
+}
+
+async function clearDynamicRules() {
+  browser.declarativeNetRequest.getDynamicRules(
+    (rules) => {
+      browser.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: rules.map((r) => r.id)
+      });
+    }
+  )
 }
 
 async function retryOnTabUpdate(tabId, info, tab) {
-  console.log('LOGGING INFO: ', info, info.url, tab);
-  if (info.url && /^(file|https?):/.test(info.url)) {
-    keepAlive();
-  }
+  if (isNewTabURL(info.url) || IsIpfs.url(info.url)) return;
 
-  if (info.url) {
-    var parsedUrl = url.parse(info.url);
-    console.log('isIPFS: ', isIPFS.url(info.url));
-    
-    if (isIPFS.url(info.url) && parsedUrl.host.indexOf(settings.host) === -1) {
-      const hostArray = parsedUrl.host.split('.');
-      const node = `${settings.host}:${settings.port}`
-      parsedUrl.protocol = 'http:';
-      hostArray.splice(-2);
-      hostArray.push(node);
-      const newHost = hostArray.join('.');
-      parsedUrl.host = newHost;
-      parsedUrl.hostname = newHost;
-      const localUrl = url.format(parsedUrl);
-      
-      console.log('redirected', info.url, 'to', node, localUrl);
-      
-      chrome.tabs.update({
-        url: localUrl
-      });
-    }
-  }
+  const currentUrl = new URL(info.url);
+  await resolveDNSAndAddRule(currentUrl.host);
 }
+
+clearDynamicRules();
+keepAlive();
