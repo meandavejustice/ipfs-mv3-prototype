@@ -6,7 +6,7 @@ So far there are 2 branches exploring different options of forwarding IPFS traff
 
 * [service_worker_alpha](https://github.com/meandavejustice/ipfs-mv3-prototype/tree/service_worker_alpha)
 * [declarativeNetRequest_alpha](https://github.com/meandavejustice/ipfs-mv3-prototype/tree/declarativeNetRequest_alpha)
-
+* [dnslink](https://github.com/meandavejustice/ipfs-mv3-prototype/tree/dnslink)
 
 ## Releases
 To save time there is a release created for `declarativeNetRequest_alpha`, `service_worker_alpha` will need to be pulled down and run `yarn build` to install.
